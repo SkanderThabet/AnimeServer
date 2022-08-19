@@ -26,7 +26,7 @@ fun Route.getAllHeroes() {
                     message = e.message ?: "Unknown error",
                     success = false,
                 ),
-                status = HttpStatusCode.BadRequest
+                status = HttpStatusCode.NotFound
             )
         }
     }
