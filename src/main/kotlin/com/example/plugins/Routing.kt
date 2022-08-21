@@ -13,6 +13,8 @@ fun Application.configureRouting() {
         root()
         getAllHeroes()
         searchHeroes()
+
+
         static("/images") {
             resources("images")
         }
