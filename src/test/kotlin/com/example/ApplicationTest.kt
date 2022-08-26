@@ -91,5 +91,95 @@ class ApplicationTest {
         )
     }
 
+    @Test
+    fun `access all heroes endpoint, query non existing page number, assert error`() = testApplication {
+        client.get("/boruto/heroes?page=6").apply {
+            assertEquals(
+                expected = HttpStatusCode.NotFound,
+                actual = status
+            )
+            val expected = ApiResponse(
+                success = false,
+                message = "Heroes not Found."
+            )
+            val actual =
+                Json.decodeFromString<ApiResponse>(bodyAsText())
+            assertEquals(
+                expected = expected,
+                actual = actual
+            )
+        }
+    }
 
+
+    @Test
+    fun `access all heroes endpoint, query invalid page number, assert error`() = testApplication {
+        client.get("/boruto/heroes?page=invalid").apply {
+            assertEquals(
+                expected = HttpStatusCode.BadRequest,
+                actual = status
+            )
+            val expected = ApiResponse(
+                success = false,
+                message = "Only numbers allowed."
+            )
+            val actual = Json.decodeFromString<ApiResponse>(bodyAsText())
+            assertEquals(
+                expected = expected,
+                actual = actual
+            )
+        }
+    }
+
+    @Test
+    fun `access search heroes endpoint, query hero name, assert single hero result`() = testApplication {
+        client.get("/boruto/heroes/search?name=sas").apply {
+            assertEquals(
+                expected = HttpStatusCode.OK,
+                actual = status
+            )
+
+            val actual = Json.decodeFromString<ApiResponse>(bodyAsText())
+                .heroes.size
+            assertEquals(
+                expected = 1,
+                actual = actual
+            )
+        }
+    }
+
+    @Test
+    fun `access search heroes endpoint, query an empty text, assert empty list as a result`() = testApplication {
+        client.get("/boruto/heroes/search?name=").apply {
+            assertEquals(expected = HttpStatusCode.OK, actual = status)
+            val actual = Json.decodeFromString<ApiResponse>(bodyAsText())
+                .heroes
+            assertEquals(expected = emptyList(), actual = actual)
+        }
+    }
+
+
+    @Test
+    fun `access search heroes endpoint, query non existing hero, assert empty list as a result`() = testApplication {
+        client.get("/boruto/heroes/search?name=unknown").apply {
+            assertEquals(expected = HttpStatusCode.OK, actual = status)
+            val actual = Json.decodeFromString<ApiResponse>(bodyAsText())
+                .heroes
+            assertEquals(expected = emptyList(), actual = actual)
+        }
+    }
+
+
+    @Test
+    fun `access non existing endpoint,assert not found`() {
+        testApplication {
+            client.get("/unknown").apply {
+                assertEquals(expected = HttpStatusCode.NotFound, actual = status)
+                assertEquals(expected = "Page Not Found.", actual = bodyAsText())
+            }
+        }
+    }
 }
+
+
+

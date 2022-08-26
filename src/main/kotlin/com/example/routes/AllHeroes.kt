@@ -22,7 +22,7 @@ fun Route.getAllHeroes() {
         } catch (e: NumberFormatException) {
             call.respond(
                 message = ApiResponse(
-                    message = "Only numbers allowed",
+                    message = "Only numbers allowed.",
                     success = false,
                 ),
                 status = HttpStatusCode.BadRequest
