@@ -1,5 +1,6 @@
 package com.example
 
+import com.example.di.koinModule
 import com.example.models.ApiResponse
 import com.example.repository.HeroRepository
 import com.example.repository.NEXT_PAGE_KEY
@@ -10,16 +11,25 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
 import org.koin.java.KoinJavaComponent.inject
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ApplicationTest {
+
     private val heroRepo: HeroRepository by inject(HeroRepository::class.java)
 
     @Test
+
     fun `access root endpoint, assert correct information`() = testApplication {
+        startKoin {
+            modules(koinModule)
+        }
+        stopKoin()
         client.get("/").apply {
+
             assertEquals(
                 expected = HttpStatusCode.OK,
                 actual = status
@@ -33,9 +43,6 @@ class ApplicationTest {
 
     @Test
     fun `access all heroes endpoint, query all pages, assert correct information`() = testApplication {
-        environment {
-            developmentMode = false
-        }
         val pages = 1..5
         val heroes = listOf(
             heroRepo.page1,
@@ -44,8 +51,11 @@ class ApplicationTest {
             heroRepo.page4,
             heroRepo.page5
         )
+        environment {
+            developmentMode = false
+        }
         pages.forEach { page ->
-            client.get("\"/boruto/heroes?page=$page\"").apply {
+            client.get("/boruto/heroes?page=$page").apply {
                 assertEquals(
                     expected = HttpStatusCode.OK,
                     actual = status
@@ -64,9 +74,9 @@ class ApplicationTest {
                     expected = expected,
                     actual = actual
                 )
+
             }
         }
-
     }
 
     private fun calculatePage(page: Int): Map<String, Int?> {
