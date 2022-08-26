@@ -18,18 +18,15 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ApplicationTest {
-
     private val heroRepo: HeroRepository by inject(HeroRepository::class.java)
 
     @Test
-
     fun `access root endpoint, assert correct information`() = testApplication {
         startKoin {
             modules(koinModule)
         }
         stopKoin()
         client.get("/").apply {
-
             assertEquals(
                 expected = HttpStatusCode.OK,
                 actual = status
@@ -38,11 +35,16 @@ class ApplicationTest {
                 expected = "Welcome to Boruto API",
                 actual = bodyAsText()
             )
+
         }
     }
 
     @Test
     fun `access all heroes endpoint, query all pages, assert correct information`() = testApplication {
+        startKoin {
+            modules(koinModule)
+        }
+
         val pages = 1..5
         val heroes = listOf(
             heroRepo.page1,
@@ -54,12 +56,14 @@ class ApplicationTest {
         environment {
             developmentMode = false
         }
+        stopKoin()
         pages.forEach { page ->
             client.get("/boruto/heroes?page=$page").apply {
                 assertEquals(
                     expected = HttpStatusCode.OK,
                     actual = status
                 )
+                stopKoin()
                 val expected = ApiResponse(
                     success = true,
                     message = "ok",
@@ -69,13 +73,14 @@ class ApplicationTest {
                 )
                 val actual = Json.decodeFromString<ApiResponse>(bodyAsText())
                 println("Acutal : $actual")
-
+                stopKoin()
                 assertEquals(
                     expected = expected,
                     actual = actual
                 )
-
+                stopKoin()
             }
+            stopKoin()
         }
     }
 
